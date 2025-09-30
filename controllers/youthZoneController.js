@@ -1,6 +1,6 @@
 // controllers/youthZoneController.js
 import mongoose from "mongoose";
-import { Challenge, Resource, Leaderboard, Participant } from "../models/youthZone.js"; // ✅ must match filename exactly
+import { Challenge, Resource, Leaderboard, Participant } from "../models/YouthZone.js"; // ✅ must match filename exactly
 import { sendNotificationEmail } from "../utils/emailUtils.js";
 
 // ================== 📌 Challenges ==================
