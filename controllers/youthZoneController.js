@@ -1,11 +1,12 @@
-const mongoose = require("mongoose");
-const { Challenge, Resource, Leaderboard, Participant } = require("../models/youthZone");
-const { sendNotificationEmail } = require("../utils/emailUtils");
+// controllers/youthZoneController.js
+import mongoose from "mongoose";
+import { Challenge, Resource, Leaderboard, Participant } from "../models/youthZone.js";
+import { sendNotificationEmail } from "../utils/emailUtils.js";
 
 // ================== 📌 Challenges ==================
 
 // Get all challenges
-exports.getChallenges = async (req, res) => {
+export const getChallenges = async (req, res) => {
   try {
     const challenges = await Challenge.find({ status: { $ne: "deleted" } }).sort({ createdAt: -1 });
     res.json(challenges);
@@ -16,7 +17,7 @@ exports.getChallenges = async (req, res) => {
 };
 
 // Get single challenge by ID
-exports.getChallenge = async (req, res) => {
+export const getChallenge = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: "Invalid challenge ID" });
@@ -34,7 +35,7 @@ exports.getChallenge = async (req, res) => {
 };
 
 // Create a challenge
-exports.createChallenge = async (req, res) => {
+export const createChallenge = async (req, res) => {
   try {
     const challengeData = {
       ...req.body,
@@ -46,7 +47,6 @@ exports.createChallenge = async (req, res) => {
     const challenge = new Challenge(challengeData);
     await challenge.save();
 
-    // Notify organizer
     try {
       await sendNotificationEmail(
         "created a new challenge",
@@ -67,7 +67,7 @@ exports.createChallenge = async (req, res) => {
 };
 
 // Update a challenge
-exports.updateChallenge = async (req, res) => {
+export const updateChallenge = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: "Invalid challenge ID" });
@@ -84,7 +84,7 @@ exports.updateChallenge = async (req, res) => {
 };
 
 // Soft delete a challenge
-exports.deleteChallenge = async (req, res) => {
+export const deleteChallenge = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: "Invalid challenge ID" });
@@ -104,7 +104,7 @@ exports.deleteChallenge = async (req, res) => {
 };
 
 // Join a challenge
-exports.joinChallenge = async (req, res) => {
+export const joinChallenge = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: "Invalid challenge ID" });
@@ -119,7 +119,6 @@ exports.joinChallenge = async (req, res) => {
       return res.status(400).json({ message: "Email is required to join challenge" });
     }
 
-    // Check if user already joined this challenge
     const existingParticipant = await Participant.findOne({
       email: req.body.email,
       challengeId: challenge._id,
@@ -129,7 +128,6 @@ exports.joinChallenge = async (req, res) => {
       return res.status(400).json({ message: "You have already joined this challenge" });
     }
 
-    // Create new participant
     const participant = new Participant({
       name: req.body.name,
       email: req.body.email,
@@ -139,11 +137,9 @@ exports.joinChallenge = async (req, res) => {
     });
     await participant.save();
 
-    // Update challenge participants count
     challenge.participants += 1;
     await challenge.save();
 
-    // Notify challenge organizer
     try {
       await sendNotificationEmail(
         "joined your challenge",
@@ -159,7 +155,7 @@ exports.joinChallenge = async (req, res) => {
     res.json({
       message: "✅ Joined challenge successfully",
       challengeId: challenge._id,
-      participant: participant,
+      participant,
     });
   } catch (error) {
     console.error("❌ Error joining challenge:", error.message);
@@ -169,7 +165,7 @@ exports.joinChallenge = async (req, res) => {
 
 // ================== 📌 Resources ==================
 
-exports.getResources = async (req, res) => {
+export const getResources = async (req, res) => {
   try {
     const resources = await Resource.find().sort({ createdAt: -1 });
     res.json(resources);
@@ -179,7 +175,7 @@ exports.getResources = async (req, res) => {
   }
 };
 
-exports.createResource = async (req, res) => {
+export const createResource = async (req, res) => {
   try {
     const resourceData = {
       ...req.body,
@@ -190,7 +186,6 @@ exports.createResource = async (req, res) => {
     const resource = new Resource(resourceData);
     await resource.save();
 
-    // Notify organizer
     try {
       await sendNotificationEmail(
         "added a new resource",
@@ -212,7 +207,7 @@ exports.createResource = async (req, res) => {
 
 // ================== 📌 Leaderboard ==================
 
-exports.getLeaderboard = async (req, res) => {
+export const getLeaderboard = async (req, res) => {
   try {
     const leaderboard = await Leaderboard.find().sort({ rank: 1 });
     res.json(leaderboard);
@@ -222,7 +217,7 @@ exports.getLeaderboard = async (req, res) => {
   }
 };
 
-exports.updateLeaderboard = async (req, res) => {
+export const updateLeaderboard = async (req, res) => {
   try {
     const { rank, name, points, students } = req.body;
     const leaderboard = new Leaderboard({ rank, name, points, students });
@@ -236,8 +231,7 @@ exports.updateLeaderboard = async (req, res) => {
 
 // ================== 📌 User-specific ==================
 
-// Joined challenge IDs
-exports.getJoinedChallenges = async (req, res) => {
+export const getJoinedChallenges = async (req, res) => {
   try {
     const userEmail = req.query.email || req.body.email;
     if (!userEmail) {
@@ -254,8 +248,7 @@ exports.getJoinedChallenges = async (req, res) => {
   }
 };
 
-// Joined challenge details
-exports.getUserChallenges = async (req, res) => {
+export const getUserChallenges = async (req, res) => {
   try {
     const email = req.query.email || req.body.email;
     if (!email) {
@@ -271,8 +264,7 @@ exports.getUserChallenges = async (req, res) => {
   }
 };
 
-// Impact stats
-exports.getImpactStats = async (req, res) => {
+export const getImpactStats = async (req, res) => {
   try {
     const totalChallenges = await Challenge.countDocuments({ status: { $ne: "deleted" } });
     const totalParticipants = await Participant.countDocuments();
