@@ -1,5 +1,6 @@
-const express = require("express");
-const {
+// routes/communityRoutes.js
+import express from "express";
+import {
   createGroup,
   getGroups,
   joinGroup,
@@ -12,7 +13,7 @@ const {
   getProjects,
   contributeProject,
   deleteProject,
-} = require("../controllers/communityController");
+} from "../controllers/communityController.js";
 
 const router = express.Router();
 
@@ -34,4 +35,4 @@ router.get("/projects", getProjects);
 router.post("/projects/:projectId/contribute", contributeProject);
 router.delete("/projects/:projectId", deleteProject); // Soft delete project
 
-module.exports = router;
+export default router; // ✅ ESM default export
