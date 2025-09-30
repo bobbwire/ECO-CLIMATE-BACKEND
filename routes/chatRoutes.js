@@ -1,3 +1,4 @@
+// routes/chatRoutes.js
 import express from "express";
 import {
   sendMessage,
@@ -9,16 +10,32 @@ import { optionalAuthenticate } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// ✅ Send a message
+/**
+ * @route   POST /api/chat/message
+ * @desc    Send a new message
+ * @access  Optional (authenticated users preferred)
+ */
 router.post("/message", optionalAuthenticate, sendMessage);
 
-// ✅ Get single conversation by ID
+/**
+ * @route   GET /api/chat/conversation/:conversationId
+ * @desc    Get a single conversation by ID
+ * @access  Optional (authenticated users preferred)
+ */
 router.get("/conversation/:conversationId", optionalAuthenticate, getConversation);
 
-// ✅ Get all conversations for logged-in user
+/**
+ * @route   GET /api/chat/conversations
+ * @desc    Get all conversations for logged-in user
+ * @access  Optional (authenticated users preferred)
+ */
 router.get("/conversations", optionalAuthenticate, getConversations);
 
-// ✅ Delete a conversation
+/**
+ * @route   DELETE /api/chat/conversation/:conversationId
+ * @desc    Delete a specific conversation
+ * @access  Optional (authenticated users preferred)
+ */
 router.delete("/conversation/:conversationId", optionalAuthenticate, deleteConversation);
 
 export default router;
