@@ -1,5 +1,5 @@
-const { Group, Event, Project } = require("../models/Community");
-const { sendNotificationEmail } = require("../utils/emailUtils");
+import { Group, Event, Project } from "../models/Community.js";
+import { sendNotificationEmail } from "../utils/emailUtils.js";
 
 // Utility: get organizer email from req.user (JWT) or req.body (fallback)
 const getRequesterEmail = (req) => {
@@ -9,7 +9,7 @@ const getRequesterEmail = (req) => {
 };
 
 // ===== GROUPS =====
-exports.createGroup = async (req, res) => {
+export const createGroup = async (req, res) => {
   try {
     const group = new Group(req.body);
     await group.save();
@@ -20,7 +20,7 @@ exports.createGroup = async (req, res) => {
   }
 };
 
-exports.getGroups = async (req, res) => {
+export const getGroups = async (req, res) => {
   try {
     const groups = await Group.find({ status: { $ne: "deleted" } }).sort({ createdAt: -1 });
     res.status(200).json(groups);
@@ -30,7 +30,7 @@ exports.getGroups = async (req, res) => {
   }
 };
 
-exports.joinGroup = async (req, res) => {
+export const joinGroup = async (req, res) => {
   try {
     const group = await Group.findById(req.params.groupId);
     if (!group || group.status === "deleted") {
@@ -65,8 +65,7 @@ exports.joinGroup = async (req, res) => {
   }
 };
 
-// SOFT DELETE GROUP
-exports.deleteGroup = async (req, res) => {
+export const deleteGroup = async (req, res) => {
   try {
     const group = await Group.findById(req.params.groupId);
     if (!group) return res.status(404).json({ message: "❌ Group not found" });
@@ -87,7 +86,7 @@ exports.deleteGroup = async (req, res) => {
 };
 
 // ===== EVENTS =====
-exports.createEvent = async (req, res) => {
+export const createEvent = async (req, res) => {
   try {
     const event = new Event(req.body);
     await event.save();
@@ -98,7 +97,7 @@ exports.createEvent = async (req, res) => {
   }
 };
 
-exports.getEvents = async (req, res) => {
+export const getEvents = async (req, res) => {
   try {
     const events = await Event.find({ status: { $ne: "deleted" } }).sort({ date: 1 });
     res.status(200).json(events);
@@ -108,7 +107,7 @@ exports.getEvents = async (req, res) => {
   }
 };
 
-exports.rsvpEvent = async (req, res) => {
+export const rsvpEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId);
     if (!event || event.status === "deleted") {
@@ -143,8 +142,7 @@ exports.rsvpEvent = async (req, res) => {
   }
 };
 
-// SOFT DELETE EVENT
-exports.deleteEvent = async (req, res) => {
+export const deleteEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId);
     if (!event) return res.status(404).json({ message: "❌ Event not found" });
@@ -165,7 +163,7 @@ exports.deleteEvent = async (req, res) => {
 };
 
 // ===== PROJECTS =====
-exports.createProject = async (req, res) => {
+export const createProject = async (req, res) => {
   try {
     const project = new Project(req.body);
     await project.save();
@@ -176,7 +174,7 @@ exports.createProject = async (req, res) => {
   }
 };
 
-exports.getProjects = async (req, res) => {
+export const getProjects = async (req, res) => {
   try {
     const projects = await Project.find({ status: { $ne: "deleted" } }).sort({ createdAt: -1 });
     res.status(200).json(projects);
@@ -186,7 +184,7 @@ exports.getProjects = async (req, res) => {
   }
 };
 
-exports.contributeProject = async (req, res) => {
+export const contributeProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.projectId);
     if (!project || project.status === "deleted") {
@@ -221,8 +219,7 @@ exports.contributeProject = async (req, res) => {
   }
 };
 
-// SOFT DELETE PROJECT
-exports.deleteProject = async (req, res) => {
+export const deleteProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.projectId);
     if (!project) return res.status(404).json({ message: "❌ Project not found" });
