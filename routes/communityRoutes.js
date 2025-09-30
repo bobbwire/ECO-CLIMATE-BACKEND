@@ -21,18 +21,18 @@ const router = express.Router();
 router.post("/groups", createGroup);
 router.get("/groups", getGroups);
 router.post("/groups/:groupId/join", joinGroup);
-router.delete("/groups/:groupId", deleteGroup); // Soft delete group
+router.delete("/groups/:groupId", deleteGroup); // soft delete group
 
 // ===== Events =====
 router.post("/events", createEvent);
 router.get("/events", getEvents);
 router.post("/events/:eventId/rsvp", rsvpEvent);
-router.delete("/events/:eventId", deleteEvent); // Soft delete event
+router.delete("/events/:eventId", deleteEvent); // soft delete event
 
 // ===== Projects =====
 router.post("/projects", createProject);
 router.get("/projects", getProjects);
 router.post("/projects/:projectId/contribute", contributeProject);
-router.delete("/projects/:projectId", deleteProject); // Soft delete project
+router.delete("/projects/:projectId", deleteProject); // soft delete project
 
-export default router; // ✅ ESM default export
+export default router;
