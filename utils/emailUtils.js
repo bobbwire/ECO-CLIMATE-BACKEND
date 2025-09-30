@@ -1,5 +1,7 @@
-const nodemailer = require("nodemailer");
-require("dotenv").config(); // ✅ Make sure environment variables load
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+
+dotenv.config(); // ✅ Make sure environment variables load
 
 // Ensure environment variables exist
 if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
@@ -27,13 +29,13 @@ transporter.verify((error, success) => {
 /**
  * Send a notification email to an organizer
  */
-const sendNotificationEmail = async (
+export async function sendNotificationEmail(
   type,
   participantName,
   participantEmail,
   organizerEmail,
   itemName
-) => {
+) {
   try {
     if (!organizerEmail) {
       throw new Error("Organizer email is missing");
@@ -62,6 +64,4 @@ const sendNotificationEmail = async (
     console.error("❌ Error sending email:", error.message);
     return false;
   }
-};
-
-module.exports = { sendNotificationEmail };
+}
