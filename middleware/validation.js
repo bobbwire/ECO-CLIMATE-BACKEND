@@ -1,8 +1,7 @@
 // middleware/validation.js
+import { body, validationResult } from "express-validator";
 
-const { body, validationResult } = require("express-validator");
-
-const validateReport = [
+export const validateReport = [
   // Report type validation
   body("reportType")
     .isIn(["pollution", "logging", "waste", "water", "other"])
@@ -23,7 +22,7 @@ const validateReport = [
     .optional()
     .isBoolean()
     .withMessage("isAnonymous must be true or false")
-    .toBoolean(), // convert "true"/"false" strings to actual booleans
+    .toBoolean(),
 
   // userEmail required if not anonymous
   body("userEmail")
@@ -46,7 +45,3 @@ const validateReport = [
     next();
   },
 ];
-
-module.exports = {
-  validateReport,
-};
