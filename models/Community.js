@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 // ===== GROUP =====
 const groupSchema = new mongoose.Schema(
@@ -67,8 +67,7 @@ const projectSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Group = mongoose.model("Group", groupSchema);
-const Event = mongoose.model("Event", eventSchema);
-const Project = mongoose.model("Project", projectSchema);
-
-module.exports = { Group, Event, Project };
+// Register models (avoid OverwriteModelError on hot reloads)
+export const Group = mongoose.models.Group || mongoose.model("Group", groupSchema);
+export const Event = mongoose.models.Event || mongoose.model("Event", eventSchema);
+export const Project = mongoose.models.Project || mongoose.model("Project", projectSchema);
