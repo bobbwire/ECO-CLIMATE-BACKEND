@@ -2,8 +2,10 @@
   "name": "eco-action-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",                      // 👈 updated if you're using server.js
+  "type": "module",                        // 👈 enables ES module support
   "scripts": {
+    "start": "node server.js",            // 👈 this is required for Render to run the app
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
