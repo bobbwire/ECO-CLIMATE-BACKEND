@@ -1,7 +1,8 @@
+// utils/emailUtils.js
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 
-dotenv.config(); // ✅ Make sure environment variables load
+dotenv.config(); // ✅ Load environment variables
 
 // Ensure environment variables exist
 if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
@@ -10,10 +11,10 @@ if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
 
 // Create transporter
 const transporter = nodemailer.createTransport({
-  service: "gmail", // ✅ Simplifies config for Gmail
+  service: "gmail", // ✅ Use Gmail
   auth: {
     user: process.env.EMAIL_USER, // Gmail address
-    pass: process.env.EMAIL_PASS, // Gmail App Password (NOT your normal Gmail password)
+    pass: process.env.EMAIL_PASS, // Gmail App Password
   },
 });
 
