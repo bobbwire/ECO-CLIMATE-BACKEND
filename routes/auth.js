@@ -2,12 +2,12 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { authenticate } from "../middleware/auth.js";  // ✅ FIXED: use named import
+import { authenticate } from "../middleware/auth.js"; // ✅ middleware import
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
 
-// Temporary in-memory users (replace with DB later)
+// ===== Temporary in-memory user store (replace with DB later) =====
 let users = [];
 
 /**
@@ -28,7 +28,13 @@ router.post("/register", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = { id: users.length + 1, name, email, password: hashedPassword };
+    const newUser = {
+      id: users.length + 1,
+      name,
+      email,
+      password: hashedPassword,
+    };
+
     users.push(newUser);
 
     const token = jwt.sign({ id: newUser.id }, JWT_SECRET, { expiresIn: "1h" });
@@ -38,7 +44,7 @@ router.post("/register", async (req, res) => {
       user: { id: newUser.id, name: newUser.name, email: newUser.email },
     });
   } catch (err) {
-    console.error("Register error:", err.message);
+    console.error("❌ Register error:", err.message);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -63,16 +69,19 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "1h" });
 
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    res.json({
+      token,
+      user: { id: user.id, name: user.name, email: user.email },
+    });
   } catch (err) {
-    console.error("Login error:", err.message);
+    console.error("❌ Login error:", err.message);
     res.status(500).json({ message: "Server error" });
   }
 });
 
 /**
  * @route   POST /api/auth/forgot-password
- * @desc    Simulate password reset
+ * @desc    Simulate password reset (for demo purposes)
  */
 router.post("/forgot-password", (req, res) => {
   const { email } = req.body;
@@ -82,22 +91,22 @@ router.post("/forgot-password", (req, res) => {
     return res.status(400).json({ message: "No account with this email found" });
   }
 
-  res.json({ message: "Reset link sent to " + email });
+  res.json({ message: `Reset link sent to ${email}` });
 });
 
 /**
  * @route   GET /api/auth/dashboard
- * @desc    Protected route example
+ * @desc    Example protected route
  */
-router.get("/dashboard", authenticate, (req, res) => {  // ✅ FIXED: use authenticate
+router.get("/dashboard", authenticate, (req, res) => {
   res.json({ message: `Welcome user ${req.user.id}, this is your dashboard.` });
 });
 
 /**
  * @route   POST /api/auth/action
- * @desc    Protected action example
+ * @desc    Example protected action
  */
-router.post("/action", authenticate, (req, res) => {   // ✅ FIXED: use authenticate
+router.post("/action", authenticate, (req, res) => {
   res.json({ message: "Your eco action was recorded successfully!" });
 });
 
