@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 // ================== Challenge Schema ==================
 const ChallengeSchema = new mongoose.Schema(
@@ -63,14 +63,7 @@ const ParticipantSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Challenge = mongoose.model("Challenge", ChallengeSchema);
-const Resource = mongoose.model("Resource", ResourceSchema);
-const Leaderboard = mongoose.model("Leaderboard", LeaderboardSchema);
-const Participant = mongoose.model("Participant", ParticipantSchema);
-
-module.exports = {
-  Challenge,
-  Resource,
-  Leaderboard,
-  Participant,
-};
+export const Challenge = mongoose.model("Challenge", ChallengeSchema);
+export const Resource = mongoose.model("Resource", ResourceSchema);
+export const Leaderboard = mongoose.model("Leaderboard", LeaderboardSchema);
+export const Participant = mongoose.model("Participant", ParticipantSchema);
