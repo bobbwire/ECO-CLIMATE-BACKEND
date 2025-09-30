@@ -38,7 +38,7 @@ import chatRoutes from "./routes/chatRoutes.js";
 import youthZoneRoutes from "./routes/youthZone.js";
 import storyRoutes from "./routes/storyRoutes.js";
 import directoryRoutes from "./routes/directoryRoutes.js";
-import jobRoutes from './routes/jobs.js';
+import jobRoutes from "./routes/jobs.js";
 
 // ===== Use Routes =====
 app.use("/api/auth", authRoutes);
@@ -49,7 +49,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/youth", youthZoneRoutes);
 app.use("/api/stories", storyRoutes);
 app.use("/api/directory", directoryRoutes);
-app.use('/api/jobs', jobRoutes);
+app.use("/api/jobs", jobRoutes);
 
 // ===== Test Email Config =====
 app.get("/api/test-email-config", async (req, res) => {
@@ -108,7 +108,9 @@ app.get("/api/health", (req, res) => {
 // ===== Serve frontend in production =====
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../client/build")));
-  app.get("*", (req, res) => {
+
+  // ✅ FIX for Express 5 – use "/*" instead of "*"
+  app.get("/*", (req, res) => {
     res.sendFile(path.join(__dirname, "../client/build/index.html"));
   });
 }
@@ -158,7 +160,9 @@ const startServer = async () => {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(`📧 Email service: ${process.env.EMAIL_USER ? "Configured" : "Not configured"}`);
+      console.log(
+        `📧 Email service: ${process.env.EMAIL_USER ? "Configured" : "Not configured"}`
+      );
       console.log(`📁 Uploads directory: ${uploadsDir}`);
       console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || "Not set"}`);
     });
