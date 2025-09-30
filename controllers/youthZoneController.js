@@ -1,6 +1,6 @@
 // controllers/youthZoneController.js
 import mongoose from "mongoose";
-import { Challenge, Resource, Leaderboard, Participant } from "../models/youthZone.js";
+import { Challenge, Resource, Leaderboard, Participant } from "../models/youthZone.js"; // ✅ must match filename exactly
 import { sendNotificationEmail } from "../utils/emailUtils.js";
 
 // ================== 📌 Challenges ==================
@@ -11,7 +11,7 @@ export const getChallenges = async (req, res) => {
     const challenges = await Challenge.find({ status: { $ne: "deleted" } }).sort({ createdAt: -1 });
     res.json(challenges);
   } catch (error) {
-    console.error("❌ Error fetching challenges:", error.message);
+    console.error("❌ Error fetching challenges:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -27,9 +27,10 @@ export const getChallenge = async (req, res) => {
     if (!challenge || challenge.status === "deleted") {
       return res.status(404).json({ message: "Challenge not found" });
     }
+
     res.json(challenge);
   } catch (error) {
-    console.error("❌ Error fetching challenge:", error.message);
+    console.error("❌ Error fetching challenge:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -56,12 +57,12 @@ export const createChallenge = async (req, res) => {
         challenge.title
       );
     } catch (emailError) {
-      console.error("⚠️ Email failed (challenge create):", emailError.message);
+      console.error("⚠️ Email failed (challenge create):", emailError);
     }
 
     res.status(201).json(challenge);
   } catch (error) {
-    console.error("❌ Error creating challenge:", error.message);
+    console.error("❌ Error creating challenge:", error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -78,7 +79,7 @@ export const updateChallenge = async (req, res) => {
 
     res.json(challenge);
   } catch (error) {
-    console.error("❌ Error updating challenge:", error.message);
+    console.error("❌ Error updating challenge:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -98,7 +99,7 @@ export const deleteChallenge = async (req, res) => {
 
     res.json({ message: "🗑️ Challenge soft-deleted successfully" });
   } catch (error) {
-    console.error("❌ Error deleting challenge:", error.message);
+    console.error("❌ Error deleting challenge:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -149,7 +150,7 @@ export const joinChallenge = async (req, res) => {
         challenge.title
       );
     } catch (emailError) {
-      console.error("⚠️ Email failed (challenge join):", emailError.message);
+      console.error("⚠️ Email failed (challenge join):", emailError);
     }
 
     res.json({
@@ -158,7 +159,7 @@ export const joinChallenge = async (req, res) => {
       participant,
     });
   } catch (error) {
-    console.error("❌ Error joining challenge:", error.message);
+    console.error("❌ Error joining challenge:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -170,7 +171,7 @@ export const getResources = async (req, res) => {
     const resources = await Resource.find().sort({ createdAt: -1 });
     res.json(resources);
   } catch (error) {
-    console.error("❌ Error fetching resources:", error.message);
+    console.error("❌ Error fetching resources:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -195,12 +196,12 @@ export const createResource = async (req, res) => {
         resource.title
       );
     } catch (emailError) {
-      console.error("⚠️ Email failed (resource create):", emailError.message);
+      console.error("⚠️ Email failed (resource create):", emailError);
     }
 
     res.status(201).json(resource);
   } catch (error) {
-    console.error("❌ Error creating resource:", error.message);
+    console.error("❌ Error creating resource:", error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -212,7 +213,7 @@ export const getLeaderboard = async (req, res) => {
     const leaderboard = await Leaderboard.find().sort({ rank: 1 });
     res.json(leaderboard);
   } catch (error) {
-    console.error("❌ Error fetching leaderboard:", error.message);
+    console.error("❌ Error fetching leaderboard:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -224,7 +225,7 @@ export const updateLeaderboard = async (req, res) => {
     await leaderboard.save();
     res.status(201).json(leaderboard);
   } catch (error) {
-    console.error("❌ Error updating leaderboard:", error.message);
+    console.error("❌ Error updating leaderboard:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -235,7 +236,6 @@ export const getJoinedChallenges = async (req, res) => {
   try {
     const userEmail = req.query.email || req.body.email;
     if (!userEmail) {
-      console.warn("⚠️ Missing email in request for getJoinedChallenges");
       return res.status(400).json({ message: "Email is required" });
     }
 
@@ -243,7 +243,7 @@ export const getJoinedChallenges = async (req, res) => {
     const challengeIds = participants.map((p) => p.challengeId);
     res.json(challengeIds);
   } catch (error) {
-    console.error("❌ Error fetching joined challenges:", error.message);
+    console.error("❌ Error fetching joined challenges:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -252,14 +252,13 @@ export const getUserChallenges = async (req, res) => {
   try {
     const email = req.query.email || req.body.email;
     if (!email) {
-      console.warn("⚠️ Missing email in request for getUserChallenges");
       return res.status(400).json({ message: "Email is required" });
     }
 
     const challenges = await Participant.find({ email }).populate("challengeId");
     res.json(challenges);
   } catch (error) {
-    console.error("❌ Error fetching user challenges:", error.message);
+    console.error("❌ Error fetching user challenges:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -270,13 +269,9 @@ export const getImpactStats = async (req, res) => {
     const totalParticipants = await Participant.countDocuments();
     const totalResources = await Resource.countDocuments();
 
-    res.json({
-      totalChallenges,
-      totalParticipants,
-      totalResources,
-    });
+    res.json({ totalChallenges, totalParticipants, totalResources });
   } catch (error) {
-    console.error("❌ Error fetching impact stats:", error.message);
+    console.error("❌ Error fetching impact stats:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
