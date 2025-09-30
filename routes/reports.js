@@ -11,7 +11,7 @@ import {
   updateReport,
   deleteReport,
   getReportStats,
-} from "../controllers/reportcontroller.js";
+} from "../controllers/reportController.js";
 import { validateReport } from "../middleware/validation.js";
 import { authenticateUser, authorizeAdmin } from "../middleware/authMiddleware.js";
 
