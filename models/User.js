@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const crypto = require('crypto');
+import mongoose from "mongoose";
+import crypto from "crypto";
 
 const userSchema = new mongoose.Schema({
   // Basic user information
@@ -131,7 +131,7 @@ userSchema.methods.demoteToUser = function() {
   return this.save();
 };
 
-// ✅ Register the model safely (fixes OverwriteModelError)
+// Register the model safely (fix OverwriteModelError)
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 
-module.exports = User;
+export default User;
