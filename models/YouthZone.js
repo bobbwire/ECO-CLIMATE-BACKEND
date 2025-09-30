@@ -1,6 +1,7 @@
+// models/youthZone.js
 import mongoose from "mongoose";
 
-// ================== Challenge Schema ==================
+// ================== 📌 Challenge Schema ==================
 const ChallengeSchema = new mongoose.Schema(
   {
     title: { type: String, required: [true, "Challenge title is required"] },
@@ -11,14 +12,14 @@ const ChallengeSchema = new mongoose.Schema(
     badge: { type: String, default: "🌍" },
     joinLink: { type: String },
     details: { type: String },
-    organizer: { type: String, required: [true, "Organizer name is required"], default: "Eco Action Team" },
+    organizer: { type: String, default: "Eco Action Team", required: [true, "Organizer name is required"] },
     organizerEmail: { type: String, required: [true, "Organizer email is required"] },
     status: { type: String, enum: ["active", "deleted"], default: "active" },
   },
   { timestamps: true }
 );
 
-// ================== Resource Schema ==================
+// ================== 📌 Resource Schema ==================
 const ResourceSchema = new mongoose.Schema(
   {
     title: { type: String, required: [true, "Resource title is required"] },
@@ -33,7 +34,7 @@ const ResourceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ================== Leaderboard Schema ==================
+// ================== 📌 Leaderboard Schema ==================
 const LeaderboardSchema = new mongoose.Schema(
   {
     rank: { type: Number, required: true, min: 1 },
@@ -44,7 +45,7 @@ const LeaderboardSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ================== Participant Schema ==================
+// ================== 📌 Participant Schema ==================
 const ParticipantSchema = new mongoose.Schema(
   {
     name: { type: String, required: [true, "Participant name is required"] },
@@ -63,6 +64,7 @@ const ParticipantSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ================== 📌 Exports ==================
 export const Challenge = mongoose.model("Challenge", ChallengeSchema);
 export const Resource = mongoose.model("Resource", ResourceSchema);
 export const Leaderboard = mongoose.model("Leaderboard", LeaderboardSchema);
