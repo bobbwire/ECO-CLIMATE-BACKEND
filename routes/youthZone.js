@@ -1,5 +1,6 @@
-const express = require("express");
-const youthZoneController = require("../controllers/youthZoneController");
+// routes/youthZone.js
+import express from "express";
+import * as youthZoneController from "../controllers/youthZoneController.js";
 
 const router = express.Router();
 
@@ -26,4 +27,5 @@ router.post("/leaderboard", youthZoneController.updateLeaderboard);
 // ================== 📌 Impact stats ==================
 router.get("/impact-stats", youthZoneController.getImpactStats);
 
-module.exports = router;
+// ✅ Export as default for server.js
+export default router;
