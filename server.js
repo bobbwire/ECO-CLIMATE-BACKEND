@@ -27,7 +27,7 @@ if (!fs.existsSync(uploadsDir)) {
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static(uploadsDir)); // serve uploaded files
+app.use("/uploads", express.static(uploadsDir)); // Serve uploaded files
 
 // ===== Import Routes =====
 import communityRoutes from "./routes/communityRoutes.js";
@@ -51,7 +51,7 @@ app.use("/api/stories", storyRoutes);
 app.use("/api/directory", directoryRoutes);
 app.use("/api/jobs", jobRoutes);
 
-// ===== Test Email Config =====
+// ===== Test Email Config Route =====
 app.get("/api/test-email-config", async (req, res) => {
   try {
     const { sendAdminApprovalRequest } = await import("./utils/emailService.js");
@@ -76,7 +76,7 @@ app.get("/api/test-email-config", async (req, res) => {
     await sendAdminApprovalRequest(testUser, superAdmins);
 
     res.json({
-      message: "Test email sent successfully",
+      message: "✅ Test email sent successfully",
       sentTo: superAdmins.map((admin) => admin.email),
       emailConfig: {
         user: process.env.EMAIL_USER,
@@ -94,7 +94,7 @@ app.get("/api/test-email-config", async (req, res) => {
   }
 });
 
-// ===== Health Check Route =====
+// ===== Health Check =====
 app.get("/api/health", (req, res) => {
   res.json({
     status: "OK",
@@ -109,7 +109,7 @@ app.get("/api/health", (req, res) => {
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../client/build")));
 
-  // ✅ FIX for Express 5 – use "/*" instead of "*"
+  // ✅ Express 5 fix: use "/*" instead of "*"
   app.get("/*", (req, res) => {
     res.sendFile(path.join(__dirname, "../client/build/index.html"));
   });
@@ -131,7 +131,7 @@ const connectDB = async () => {
   }
 };
 
-// ===== Error handling middleware =====
+// ===== Error Handling Middleware =====
 app.use((err, req, res, next) => {
   console.error("❌ Server error:", err.stack);
   res.status(500).json({
@@ -145,24 +145,22 @@ app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-// ===== Graceful shutdown =====
+// ===== Graceful Shutdown =====
 process.on("SIGINT", async () => {
   console.log("👋 Shutting down gracefully...");
   await mongoose.connection.close();
   process.exit(0);
 });
 
-// ===== Start server =====
+// ===== Start Server =====
 const startServer = async () => {
   try {
     await connectDB();
-
     const PORT = process.env.PORT || 5000;
+
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(
-        `📧 Email service: ${process.env.EMAIL_USER ? "Configured" : "Not configured"}`
-      );
+      console.log(`📧 Email service: ${process.env.EMAIL_USER ? "Configured" : "Not configured"}`);
       console.log(`📁 Uploads directory: ${uploadsDir}`);
       console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || "Not set"}`);
     });
