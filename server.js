@@ -105,13 +105,18 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// ===== Serve frontend in production =====
+// ===== Serve Frontend in Production (✅ Fixed for Express 5) =====
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../client/build")));
+  const clientPath = path.join(__dirname, "../client/build");
+  app.use(express.static(clientPath));
 
-  // ✅ Express 5 fix: use "/*" instead of "*"
-  app.get("/*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../client/build/index.html"));
+  // ✅ Safe SPA fallback (no path-to-regexp crash)
+  app.use((req, res, next) => {
+    if (req.method === "GET" && !req.path.startsWith("/api")) {
+      res.sendFile(path.join(clientPath, "index.html"));
+    } else {
+      next();
+    }
   });
 }
 
