@@ -23,8 +23,26 @@ if (!fs.existsSync(uploadsDir)) {
   console.log("✅ Created uploads directory:", uploadsDir);
 }
 
+// ===== CORS Configuration (✅ connect Render backend + Vercel frontend) =====
+const allowedOrigins = [
+  "https://eco-climate.vercel.app", // your production frontend
+  "http://localhost:5173",          // local dev
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("❌ Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+
 // ===== Middleware =====
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(uploadsDir)); // Serve uploaded files
@@ -105,19 +123,19 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// ===== Serve Frontend in Production (✅ Fixed for Express 5) =====
+// ===== Serve Frontend in Production (optional if hosting frontend separately) =====
 if (process.env.NODE_ENV === "production") {
   const clientPath = path.join(__dirname, "../client/build");
-  app.use(express.static(clientPath));
-
-  // ✅ Safe SPA fallback (no path-to-regexp crash)
-  app.use((req, res, next) => {
-    if (req.method === "GET" && !req.path.startsWith("/api")) {
-      res.sendFile(path.join(clientPath, "index.html"));
-    } else {
-      next();
-    }
-  });
+  if (fs.existsSync(clientPath)) {
+    app.use(express.static(clientPath));
+    app.use((req, res, next) => {
+      if (req.method === "GET" && !req.path.startsWith("/api")) {
+        res.sendFile(path.join(clientPath, "index.html"));
+      } else {
+        next();
+      }
+    });
+  }
 }
 
 // ===== MongoDB Connection =====
@@ -125,10 +143,7 @@ mongoose.set("strictQuery", false);
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ MongoDB connected");
   } catch (err) {
     console.error("❌ MongoDB connection error:", err.message);
