@@ -8,6 +8,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import nodemailer from "nodemailer";
 
 // ===== Fix __dirname in ESM =====
 const __filename = fileURLToPath(import.meta.url);
@@ -25,7 +26,7 @@ if (!fs.existsSync(uploadsDir)) {
 
 // ===== CORS Configuration (✅ connect Render backend + Vercel frontend) =====
 const allowedOrigins = [
-  "https://eco-climate.vercel.app", // your production frontend
+  "https://eco-climate.vercel.app", // production frontend
   "http://localhost:5173",          // local dev
 ];
 
@@ -69,46 +70,35 @@ app.use("/api/stories", storyRoutes);
 app.use("/api/directory", directoryRoutes);
 app.use("/api/jobs", jobRoutes);
 
-// ===== Test Email Config Route =====
-app.get("/api/test-email-config", async (req, res) => {
+// ====== TEST EMAIL ROUTE (to verify Gmail App Password setup) ======
+app.get("/api/test-email", async (req, res) => {
   try {
-    const { sendAdminApprovalRequest } = await import("./utils/emailService.js");
-    const User = (await import("./models/User.js")).default;
-
-    const superAdmins = await User.find({ role: "super_admin" });
-    if (superAdmins.length === 0) {
-      return res.status(400).json({
-        message: "No super admins found. Please create a super admin first.",
-        superAdminsCount: 0,
-      });
-    }
-
-    const testUser = {
-      name: "Test User",
-      email: "test@example.com",
-      adminRequestReason: "This is a test email request",
-      createdAt: new Date(),
-      _id: new mongoose.Types.ObjectId(),
-    };
-
-    await sendAdminApprovalRequest(testUser, superAdmins);
-
-    res.json({
-      message: "✅ Test email sent successfully",
-      sentTo: superAdmins.map((admin) => admin.email),
-      emailConfig: {
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
         user: process.env.EMAIL_USER,
-        hasPassword: !!process.env.EMAIL_PASS,
-        frontendUrl: process.env.FRONTEND_URL,
+        pass: process.env.EMAIL_PASS,
       },
     });
-  } catch (error) {
-    console.error("❌ Test email error:", error);
-    res.status(500).json({
-      message: "Test email failed",
-      error: error.message,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+
+    await transporter.verify();
+    console.log("✅ Gmail SMTP connected successfully.");
+
+    const info = await transporter.sendMail({
+      from: `"EcoAction Test" <${process.env.EMAIL_USER}>`,
+      to: process.env.EMAIL_USER,
+      subject: "EcoAction Test Email ✔",
+      text: "This is a test email from your Render backend (EcoAction).",
+      html: "<b>This is a test email from your Render backend (EcoAction).</b>",
     });
+
+    console.log("✅ Email sent:", info.response);
+    res.json({ success: true, message: "Test email sent successfully!" });
+  } catch (error) {
+    console.error("❌ Email test failed:", error.message);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
@@ -117,30 +107,24 @@ app.get("/api/health", (req, res) => {
   res.json({
     status: "OK",
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || "development",
     uploadsDir,
-    uploadsExists: fs.existsSync(uploadsDir),
+    emailConfigured: !!process.env.EMAIL_USER,
   });
 });
 
-// ===== Serve Frontend in Production (optional if hosting frontend separately) =====
+// ===== Serve Frontend in Production (optional) =====
 if (process.env.NODE_ENV === "production") {
   const clientPath = path.join(__dirname, "../client/build");
   if (fs.existsSync(clientPath)) {
     app.use(express.static(clientPath));
-    app.use((req, res, next) => {
-      if (req.method === "GET" && !req.path.startsWith("/api")) {
-        res.sendFile(path.join(clientPath, "index.html"));
-      } else {
-        next();
-      }
-    });
+    app.get("*", (req, res) =>
+      res.sendFile(path.join(clientPath, "index.html"))
+    );
   }
 }
 
 // ===== MongoDB Connection =====
 mongoose.set("strictQuery", false);
-
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
@@ -180,8 +164,7 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(`📧 Email service: ${process.env.EMAIL_USER ? "Configured" : "Not configured"}`);
-      console.log(`📁 Uploads directory: ${uploadsDir}`);
+      console.log(`📧 Email: ${process.env.EMAIL_USER ? "Configured" : "Not configured"}`);
       console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || "Not set"}`);
     });
   } catch (error) {
