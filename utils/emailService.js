@@ -1,23 +1,52 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// ===============================
+// NODEMAILER TRANSPORT CONFIG
+// ===============================
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port: process.env.SMTP_PORT || 587,
+  secure: false, // true for port 465
+  auth: {
+    user: process.env.SMTP_USER, // e.g. ecoaction@gmail.com
+    pass: process.env.SMTP_PASS, // Gmail App Password
+  },
+  tls: {
+    rejectUnauthorized: false, // Fix SSL issue on Render
+  },
+});
 
-// General reusable email sender
+// Verify transporter connection
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("❌ Email transporter verification failed:", error.message);
+  } else {
+    console.log("✅ Email transporter is ready");
+  }
+});
+
+// ===============================
+// GENERIC EMAIL SENDER
+// ===============================
 const sendEmail = async ({ to, subject, html }) => {
   try {
-    await resend.emails.send({
-      from: "EcoAction Platform <noreply@eco-climate.app>", // You can customize this domain later
+    const info = await transporter.sendMail({
+      from: `"EcoAction Platform" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,
     });
-    console.log(`✅ Email sent successfully to ${to}`);
+    console.log(`✅ Email sent successfully to ${to} (${info.messageId})`);
   } catch (error) {
     console.error("❌ Error sending email:", error.message);
   }
 };
 
-// Send admin approval request email to super admins
+// ===============================
+// REUSABLE EMAIL FUNCTIONS
+// ===============================
+
+// 1️⃣ Admin Approval Request
 export const sendAdminApprovalRequest = async (adminUser, superAdmins) => {
   try {
     if (!superAdmins || superAdmins.length === 0) {
@@ -30,23 +59,20 @@ export const sendAdminApprovalRequest = async (adminUser, superAdmins) => {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>New Admin Approval Request</h2>
           <p>A user has requested admin access to the EcoAction platform.</p>
-          
           <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
             <h3>Request Details:</h3>
             <p><strong>Name:</strong> ${adminUser.name}</p>
             <p><strong>Email:</strong> ${adminUser.email}</p>
-            <p><strong>Request Reason:</strong> ${adminUser.adminRequestReason}</p>
-            <p><strong>Request Date:</strong> ${new Date(adminUser.createdAt).toLocaleString()}</p>
+            <p><strong>Reason:</strong> ${adminUser.adminRequestReason}</p>
+            <p><strong>Date:</strong> ${new Date(adminUser.createdAt).toLocaleString()}</p>
           </div>
-          
           <p>Please log in to the admin dashboard to review this request.</p>
-          <a href="${process.env.FRONTEND_URL}/admin" 
+          <a href="${process.env.FRONTEND_URL}/admin"
              style="display:inline-block;padding:10px 20px;background:#4CAF50;color:#fff;text-decoration:none;border-radius:4px;">
              Go to Admin Dashboard
           </a>
         </div>
       `;
-
       return sendEmail({
         to: admin.email,
         subject: "New Admin Approval Request - EcoAction Platform",
@@ -61,23 +87,22 @@ export const sendAdminApprovalRequest = async (adminUser, superAdmins) => {
   }
 };
 
-// Send admin approval confirmation email to the user
+// 2️⃣ Admin Approval Confirmation
 export const sendAdminApprovalConfirmation = async (user) => {
   const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
       <h2>Admin Access Approved</h2>
       <p>Dear ${user.name},</p>
-      <p>Your request for admin access to the EcoAction platform has been approved.</p>
+      <p>Your request for admin access has been approved.</p>
       <a href="${process.env.FRONTEND_URL}/admin"
          style="display:inline-block;padding:10px 20px;background:#4CAF50;color:#fff;text-decoration:none;border-radius:4px;">
          Go to Admin Dashboard
       </a>
-      <p style="margin-top:30px;color:#666;font-size:14px;">
-        If you did not request admin access, please contact us immediately.
+      <p style="margin-top:20px;font-size:13px;color:#666;">
+        If you did not request this, please contact support.
       </p>
     </div>
   `;
-
   await sendEmail({
     to: user.email,
     subject: "Your Admin Access Has Been Approved - EcoAction Platform",
@@ -85,20 +110,16 @@ export const sendAdminApprovalConfirmation = async (user) => {
   });
 };
 
-// Send admin rejection notification email to the user
+// 3️⃣ Admin Rejection Notification
 export const sendAdminRejectionNotification = async (user) => {
   const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
       <h2>Admin Access Request Update</h2>
       <p>Dear ${user.name},</p>
-      <p>Thank you for your interest in becoming an admin for the EcoAction platform.</p>
-      <p>After review, your admin access request has not been approved at this time.</p>
-      <p style="margin-top:30px;color:#666;font-size:14px;">
-        Thank you for your understanding.
-      </p>
+      <p>Unfortunately, your admin access request has not been approved at this time.</p>
+      <p>Thank you for your understanding.</p>
     </div>
   `;
-
   await sendEmail({
     to: user.email,
     subject: "Your Admin Access Request - EcoAction Platform",
@@ -106,23 +127,19 @@ export const sendAdminRejectionNotification = async (user) => {
   });
 };
 
-// Send new admin created notification
+// 4️⃣ New Admin Notification
 export const sendNewAdminNotification = async (user, createdBy) => {
   const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
       <h2>Welcome to the EcoAction Admin Team</h2>
       <p>Dear ${user.name},</p>
-      <p>You have been added as an administrator by ${createdBy.name} (${createdBy.email}).</p>
+      <p>You were added as an administrator by ${createdBy.name} (${createdBy.email}).</p>
       <a href="${process.env.FRONTEND_URL}/admin"
          style="display:inline-block;padding:10px 20px;background:#4CAF50;color:#fff;text-decoration:none;border-radius:4px;">
-         Go to Admin Dashboard
+         Open Dashboard
       </a>
-      <p style="margin-top:30px;color:#666;font-size:14px;">
-        If you believe this is an error, please contact us immediately.
-      </p>
     </div>
   `;
-
   await sendEmail({
     to: user.email,
     subject: "Welcome as an EcoAction Admin",
